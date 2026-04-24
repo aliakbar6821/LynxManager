@@ -2,10 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory 
-        android:title="Integrity Configuration"
-        app:allowDividerAbove="true">
-
+    <PreferenceCategory android:title="Integrity Configuration" app:allowDividerAbove="true">
         <Preference
             android:key="pref_add_pif"
             android:title="Google PIF (JSON)"
@@ -17,25 +14,19 @@
             android:title="Hardware Keybox (XML)"
             android:summary="Inject hardware attestation keys for Strong Integrity"
             app:icon="@android:drawable/ic_lock_lock" />
-            
     </PreferenceCategory>
 
-    <PreferenceCategory 
-        android:title="Tools &amp; Maintenance"
-        app:allowDividerAbove="true">
-
+    <PreferenceCategory android:title="Tools &amp; Maintenance" app:allowDividerAbove="true">
         <Preference
-            android:key="pref_check_integrity"
-            android:title="Check Play Integrity"
-            android:summary="Launch Play Store developer options"
-            app:icon="@android:drawable/ic_menu_info_details" />
+            android:key="pref_refresh_spoof"
+            android:title="Refresh Spoof"
+            android:summary="Force stop GMS &amp; Play Store to load new data"
+            app:icon="@android:drawable/ic_menu_rotate" />
 
         <Preference
             android:key="pref_reset_spoofing"
             android:title="Reset All Spoofing"
             android:summary="Wipe secure database and revert to default"
             app:icon="@android:drawable/ic_menu_revert" />
-
     </PreferenceCategory>
-
 </PreferenceScreen>

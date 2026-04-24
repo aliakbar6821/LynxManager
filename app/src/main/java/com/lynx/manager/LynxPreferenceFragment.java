@@ -34,14 +34,18 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.lynx_preferences, rootKey);
 
-        findPreference("pref_add_pif").setOnPreferenceClickListener(p -> { openFilePicker("application/json", "pif"); return true; });
-        findPreference("pref_add_keybox").setOnPreferenceClickListener(p -> { openFilePicker("text/xml", "keybox"); return true; });
-        findPreference("pref_reset_spoofing").setOnPreferenceClickListener(p -> { resetSpoofing(); return true; });
-        
-        findPreference("pref_refresh_spoof").setOnPreferenceClickListener(p -> {
-            refreshSpoof();
-            return true;
-        });
+        // Null-safe assignment
+        setupPref("pref_add_pif", p -> { openFilePicker("application/json", "pif"); return true; });
+        setupPref("pref_add_keybox", p -> { openFilePicker("text/xml", "keybox"); return true; });
+        setupPref("pref_reset_spoofing", p -> { resetSpoofing(); return true; });
+        setupPref("pref_refresh_spoof", p -> { refreshSpoof(); return true; });
+    }
+
+    private void setupPref(String key, Preference.OnPreferenceClickListener listener) {
+        Preference pref = findPreference(key);
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(listener);
+        }
     }
 
     private void openFilePicker(String mimeType, String type) {
@@ -54,8 +58,8 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
 
     private void handleFileSelection(Uri uri) {
         try {
-            InputStream inputStream = getContext().getContentResolver().openInputStream(uri);
-            String content = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
+            InputStream is = getContext().getContentResolver().openInputStream(uri);
+            String content = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
             Settings.Secure.putString(getContext().getContentResolver(), currentType.equals("pif") ? "lynx_pif_data" : "lynx_keybox_data", content);
             Toast.makeText(getContext(), "✅ " + currentType.toUpperCase() + " Applied", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
@@ -67,13 +71,11 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
         ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
         if (am != null) {
             try {
-                // Use Reflection to call the hidden forceStopPackage method
                 Method method = am.getClass().getMethod("forceStopPackage", String.class);
                 method.invoke(am, "com.android.vending");
                 method.invoke(am, "com.google.android.gms");
                 Toast.makeText(getContext(), "🔄 Spoofing Refreshed", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                // If reflection fails or permission is missing
                 Toast.makeText(getContext(), "❌ System call failed", Toast.LENGTH_SHORT).show();
             }
         }
