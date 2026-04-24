@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.LynxManager" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
+    <style name="Theme.LynxManager" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+
+        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
+        
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
         <item name="android:colorAccent">?android:attr/colorAccent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 </resources>
