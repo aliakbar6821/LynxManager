@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LynxManagerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Force our stable theme
         setTheme(R.style.Theme_LynxManager);
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {

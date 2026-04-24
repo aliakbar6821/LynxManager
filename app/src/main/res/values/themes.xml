@@ -3,16 +3,16 @@
     <style name="Theme.LynxManager" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.Material.DayNight</item>
 
-        <item name="android:textColorPrimary">@android:color/primary_text_dark</item>
-        <item name="android:textColorSecondary">@android:color/secondary_text_dark</item>
-        <item name="android:textColorTertiary">@android:color/secondary_text_dark</item>
-        <item name="android:textColorHint">@android:color/hint_foreground_dark</item>
-
-        <item name="colorOnSurface">@android:color/white</item>
-        <item name="colorOnSurfaceVariant">#B3FFFFFF</item>
-        <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <item name="android:windowBackground">@color/lynx_black</item>
+        <item name="android:textColorPrimary">@color/lynx_text_main</item>
+        <item name="android:textColorSecondary">@color/lynx_text_sub</item>
+        <item name="android:textColorTertiary">@color/lynx_text_sub</item>
         
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
+        <item name="colorPrimary">@color/lynx_primary</item>
+        <item name="colorSurface">@color/lynx_surface</item>
+        <item name="colorOnSurface">@color/lynx_text_main</item>
+        <item name="colorOnSurfaceVariant">@color/lynx_text_sub</item>
+
+        <item name="android:windowIsTranslucent">false</item>
     </style>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lynx_black">#000000</color>
+    <color name="lynx_surface">#121212</color>
+    <color name="lynx_primary">#D0BCFF</color>
+    <color name="lynx_text_main">#FFFFFF</color>
+    <color name="lynx_text_sub">#B3FFFFFF</color>
+</resources>
