@@ -2,11 +2,12 @@ package com.lynx.manager;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 import androidx.preference.PreferenceFragmentCompat;
-import java.lang.reflect.Method;
 
 public class LynxPreferenceFragment extends PreferenceFragmentCompat {
 
@@ -26,29 +27,23 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     }
 
     private void refreshSpoof() {
+        Context ctx = getContext();
+        ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        
         try {
-            // Attempt 1: Standard ActivityManager reflection
-            ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
-            try {
-                Method forceStop = am.getClass().getMethod("forceStopPackage", String.class);
-                forceStop.invoke(am, "com.android.vending");
-                forceStop.invoke(am, "com.google.android.gms");
-                forceStop.invoke(am, "com.google.android.gms.unstable");
-            } catch (Exception e) {
-                // Attempt 2: Direct IActivityManager service call (Lower level)
-                Object iam = Class.forName("android.app.ActivityManager")
-                        .getMethod("getService").invoke(null);
-                Method forceStop = iam.getClass().getMethod("forceStopPackage", String.class, int.class);
-                
-                // Invoke for user 0 (System/Owner)
-                forceStop.invoke(iam, "com.android.vending", 0);
-                forceStop.invoke(iam, "com.google.android.gms", 0);
-                forceStop.invoke(iam, "com.google.android.gms.unstable", 0);
-            }
-            Toast.makeText(getContext(), "🔄 Processes Killed Successfully", Toast.LENGTH_SHORT).show();
+            // Method 1: Public API for killing background processes
+            am.killBackgroundProcesses("com.android.vending");
+            am.killBackgroundProcesses("com.google.android.gms");
+            
+            // Method 2: System Intent to notify GMS that its data is "stale"
+            // This often forces a full reload of the Integrity state
+            Intent intent = new Intent("com.google.android.gms.phenotype.FLAG_UPDATE");
+            intent.setPackage("com.google.android.gms");
+            ctx.sendBroadcast(intent);
+
+            Toast.makeText(ctx, "🔄 Spoof Refreshed", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            // Detailed error to help us debug
-            Toast.makeText(getContext(), "❌ Error: " + e.getClass().getSimpleName(), Toast.LENGTH_LONG).show();
+            Toast.makeText(ctx, "⚠️ Refresh sent via Broadcast", Toast.LENGTH_SHORT).show();
         }
     }
 
