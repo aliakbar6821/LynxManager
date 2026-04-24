@@ -1,34 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:title="@string/app_name">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="Spoofing Configuration">
+    <PreferenceCategory 
+        android:title="Integrity Configuration"
+        app:allowDividerAbove="true">
+
         <Preference
             android:key="pref_add_pif"
-            android:title="Add PIF Option"
-            android:summary="Select a custom pif.json file"
-            app:iconSpaceReserved="false" />
+            android:title="Google PIF (JSON)"
+            android:summary="Spoof device fingerprint and build properties"
+            app:icon="@android:drawable/ic_menu_edit" />
 
         <Preference
             android:key="pref_add_keybox"
-            android:title="Add Keybox Option"
-            android:summary="Select a custom keybox.xml file"
-            app:iconSpaceReserved="false" />
+            android:title="Hardware Keybox (XML)"
+            android:summary="Inject hardware attestation keys for Strong Integrity"
+            app:icon="@android:drawable/ic_lock_lock" />
+            
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Management">
-        <Preference
-            android:key="pref_reset_spoofing"
-            android:title="Reset Spoofing"
-            android:summary="Clear custom keys and revert to default"
-            app:iconSpaceReserved="false" />
+    <PreferenceCategory 
+        android:title="Tools &amp; Maintenance"
+        app:allowDividerAbove="true">
 
         <Preference
             android:key="pref_check_integrity"
-            android:title="Check Integrity"
-            android:summary="Open Play Store Developer Options"
-            app:iconSpaceReserved="false" />
+            android:title="Check Play Integrity"
+            android:summary="Launch Play Store developer options"
+            app:icon="@android:drawable/ic_menu_info_details" />
+
+        <Preference
+            android:key="pref_reset_spoofing"
+            android:title="Reset All Spoofing"
+            android:summary="Wipe secure database and revert to default"
+            app:icon="@android:drawable/ic_menu_revert" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -16,10 +16,17 @@
             <intent-filter android:priority="1">
                 <action android:name="com.android.settings.action.IA_SETTINGS" />
                 <category android:name="com.android.settings.category.ia.system" />
+                
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
             <meta-data
                 android:name="com.android.settings.summary"
                 android:value="@string/app_summary" />
+            <meta-data
+                android:name="com.android.settings.icon"
+                android:resource="@drawable/ic_lynx" />
         </activity>
 
     </application>
