@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/app_name">
+
+    <PreferenceCategory android:title="Spoofing Configuration">
+        <Preference
+            android:key="pref_add_pif"
+            android:title="Add PIF Option"
+            android:summary="Select a custom pif.json file"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="pref_add_keybox"
+            android:title="Add Keybox Option"
+            android:summary="Select a custom keybox.xml file"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Management">
+        <Preference
+            android:key="pref_reset_spoofing"
+            android:title="Reset Spoofing"
+            android:summary="Clear custom keys and revert to default"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="pref_check_integrity"
+            android:title="Check Integrity"
+            android:summary="Open Play Store Developer Options"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
