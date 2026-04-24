@@ -3,7 +3,6 @@ package com.lynx.manager;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
@@ -15,35 +14,34 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.lynx_preferences, rootKey);
 
-        setupPref("pref_add_pif", p -> { /* file picker logic */ return true; });
-        setupPref("pref_add_keybox", p -> { /* file picker logic */ return true; });
         setupPref("pref_reset_spoofing", p -> { resetSpoofing(); return true; });
         setupPref("pref_refresh_spoof", p -> { refreshSpoof(); return true; });
     }
 
-    private void setupPref(String key, androidx.preference.Preference.OnPreferenceClickListener l) {
-        androidx.preference.Preference p = findPreference(key);
-        if (p != null) p.setOnPreferenceClickListener(l);
+    private void setupPref(String key, androidx.preference.Preference.OnPreferenceClickListener listener) {
+        androidx.preference.Preference pref = findPreference(key);
+        if (pref != null) pref.setOnPreferenceClickListener(listener);
     }
 
     private void refreshSpoof() {
         Context ctx = getContext();
         ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
-        
+
         try {
-            // Method 1: Public API for killing background processes
-            am.killBackgroundProcesses("com.android.vending");
-            am.killBackgroundProcesses("com.google.android.gms");
-            
-            // Method 2: System Intent to notify GMS that its data is "stale"
-            // This often forces a full reload of the Integrity state
+            // Signal GMS that its configuration is stale
             Intent intent = new Intent("com.google.android.gms.phenotype.FLAG_UPDATE");
             intent.setPackage("com.google.android.gms");
             ctx.sendBroadcast(intent);
 
-            Toast.makeText(ctx, "🔄 Spoof Refreshed", Toast.LENGTH_SHORT).show();
+            // Kill processes (Safe for privileged system apps)
+            String[] targets = {"com.android.vending", "com.google.android.gms", "com.google.android.gms.unstable"};
+            for (String pkg : targets) {
+                am.killBackgroundProcesses(pkg);
+            }
+
+            Toast.makeText(ctx, "🔄 Sync signal sent to GMS", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(ctx, "⚠️ Refresh sent via Broadcast", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, "⚠️ Refresh triggered", Toast.LENGTH_SHORT).show();
         }
     }
 

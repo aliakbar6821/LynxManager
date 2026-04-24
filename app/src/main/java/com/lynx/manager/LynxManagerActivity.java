@@ -16,12 +16,12 @@ public class LynxManagerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lynx_manager);
 
-        AppBarLayout appBag = findViewById(R.id.app_bar_layout);
+        AppBarLayout appBar = findViewById(R.id.app_bar_layout);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // MANUAL INSET INJECTION: This pushes the toolbar down below the status bar
-        ViewCompat.setOnApplyWindowInsetsListener(appBag, (v, insets) -> {
+        // This listener waits for the system bars to load and injects padding
+        ViewCompat.setOnApplyWindowInsetsListener(appBar, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(0, systemBars.top, 0, 0);
             return insets;
