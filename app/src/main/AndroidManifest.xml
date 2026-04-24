@@ -13,20 +13,25 @@
             android:name=".LynxManagerActivity"
             android:exported="true"
             android:label="@string/app_name">
-            <intent-filter android:priority="1">
-                <action android:name="com.android.settings.action.IA_SETTINGS" />
-                <category android:name="com.android.settings.category.ia.system" />
-                
+            
+            <intent-filter android:priority="100">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                
+                <action android:name="com.android.settings.action.IA_SETTINGS" />
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS" />
+                <category android:name="com.android.settings.category.ia.system" />
             </intent-filter>
             
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.system" />
             <meta-data
                 android:name="com.android.settings.summary"
                 android:value="@string/app_summary" />
             <meta-data
-                android:name="com.android.settings.icon"
-                android:resource="@drawable/ic_lynx" />
+                android:name="com.android.settings.order"
+                android:value="50" />
         </activity>
 
     </application>
