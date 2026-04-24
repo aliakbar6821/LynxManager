@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.LynxManager" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.Material.DayNight</item>
+        
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
 
         <item name="android:windowBackground">@color/lynx_black</item>
-        <item name="android:textColorPrimary">@color/lynx_text_main</item>
-        <item name="android:textColorSecondary">@color/lynx_text_sub</item>
-        <item name="android:textColorTertiary">@color/lynx_text_sub</item>
+        <item name="android:textColorPrimary">@color/lynx_on_surface</item>
+        <item name="android:textColorSecondary">@color/lynx_on_surface_variant</item>
         
         <item name="colorPrimary">@color/lynx_primary</item>
-        <item name="colorSurface">@color/lynx_surface</item>
-        <item name="colorOnSurface">@color/lynx_text_main</item>
-        <item name="colorOnSurfaceVariant">@color/lynx_text_sub</item>
-
+        <item name="colorOnSurface">@color/lynx_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/lynx_on_surface_variant</item>
+        
         <item name="android:windowIsTranslucent">false</item>
     </style>
 </resources>
