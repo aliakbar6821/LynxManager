@@ -1,7 +1,8 @@
 package com.lynx.manager;
 
 import android.app.Activity;
-import android.content.ContentResolver;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,8 +20,6 @@ import java.util.stream.Collectors;
 public class LynxPreferenceFragment extends PreferenceFragmentCompat {
 
     private String currentType = "";
-
-    // The Launcher for the File Picker (DocumentUI)
     private final ActivityResultLauncher<Intent> filePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -34,27 +33,12 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.lynx_preferences, rootKey);
 
-        // 1. Add PIF Click
-        findPreference("pref_add_pif").setOnPreferenceClickListener(pref -> {
-            openFilePicker("application/json", "pif");
-            return true;
-        });
-
-        // 2. Add Keybox Click
-        findPreference("pref_add_keybox").setOnPreferenceClickListener(pref -> {
-            openFilePicker("text/xml", "keybox");
-            return true;
-        });
-
-        // 3. Reset Spoofing Click
-        findPreference("pref_reset_spoofing").setOnPreferenceClickListener(pref -> {
-            resetSpoofing();
-            return true;
-        });
-
-        // 4. Check Integrity Click
-        findPreference("pref_check_integrity").setOnPreferenceClickListener(pref -> {
-            launchPlayStoreIntegrity();
+        findPreference("pref_add_pif").setOnPreferenceClickListener(p -> { openFilePicker("application/json", "pif"); return true; });
+        findPreference("pref_add_keybox").setOnPreferenceClickListener(p -> { openFilePicker("text/xml", "keybox"); return true; });
+        findPreference("pref_reset_spoofing").setOnPreferenceClickListener(p -> { resetSpoofing(); return true; });
+        
+        findPreference("pref_refresh_spoof").setOnPreferenceClickListener(p -> {
+            refreshSpoof();
             return true;
         });
     }
@@ -70,38 +54,31 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     private void handleFileSelection(Uri uri) {
         try {
             InputStream inputStream = getContext().getContentResolver().openInputStream(uri);
-            String content = new BufferedReader(new InputStreamReader(inputStream))
-                    .lines().collect(Collectors.joining("\n"));
-
-            ContentResolver resolver = getContext().getContentResolver();
-            if (currentType.equals("pif")) {
-                Settings.Secure.putString(resolver, "lynx_pif_data", content);
-                Toast.makeText(getContext(), "✅ PIF Loaded Successfully", Toast.LENGTH_SHORT).show();
-            } else {
-                Settings.Secure.putString(resolver, "lynx_keybox_data", content);
-                Toast.makeText(getContext(), "✅ Keybox Loaded Successfully", Toast.LENGTH_SHORT).show();
-            }
+            String content = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
+            Settings.Secure.putString(getContext().getContentResolver(), currentType.equals("pif") ? "lynx_pif_data" : "lynx_keybox_data", content);
+            Toast.makeText(getContext(), "✅ " + currentType.toUpperCase() + " Applied", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(getContext(), "❌ Error loading file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "❌ Error reading file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void refreshSpoof() {
+        // The System Way: No 'su' required for privileged apps
+        ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        if (am != null) {
+            try {
+                am.forceStopPackage("com.android.vending");
+                am.forceStopPackage("com.google.android.gms");
+                Toast.makeText(getContext(), "🔄 Spoofing Refreshed", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "❌ Failed to refresh: System permission missing", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     private void resetSpoofing() {
-        ContentResolver resolver = getContext().getContentResolver();
-        Settings.Secure.putString(resolver, "lynx_pif_data", null);
-        Settings.Secure.putString(resolver, "lynx_keybox_data", null);
-        Toast.makeText(getContext(), "🗑️ Spoofing Data Cleared", Toast.LENGTH_SHORT).show();
-    }
-
-    private void launchPlayStoreIntegrity() {
-        try {
-            Intent intent = new Intent("com.google.android.gms.PLAY_INTEGRITY_CHECK");
-            intent.setPackage("com.android.vending");
-            startActivity(intent);
-        } catch (Exception e) {
-            // Fallback to Play Store home if the shortcut fails
-            Intent intent = getContext().getPackageManager().getLaunchIntentForPackage("com.android.vending");
-            startActivity(intent);
-        }
+        Settings.Secure.putString(getContext().getContentResolver(), "lynx_pif_data", null);
+        Settings.Secure.putString(getContext().getContentResolver(), "lynx_keybox_data", null);
+        Toast.makeText(getContext(), "🗑️ Database Wiped", Toast.LENGTH_SHORT).show();
     }
 }
