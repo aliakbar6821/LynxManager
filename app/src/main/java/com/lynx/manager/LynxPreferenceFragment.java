@@ -15,6 +15,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 
 public class LynxPreferenceFragment extends PreferenceFragmentCompat {
@@ -63,15 +64,17 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     }
 
     private void refreshSpoof() {
-        // The System Way: No 'su' required for privileged apps
         ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
         if (am != null) {
             try {
-                am.forceStopPackage("com.android.vending");
-                am.forceStopPackage("com.google.android.gms");
+                // Use Reflection to call the hidden forceStopPackage method
+                Method method = am.getClass().getMethod("forceStopPackage", String.class);
+                method.invoke(am, "com.android.vending");
+                method.invoke(am, "com.google.android.gms");
                 Toast.makeText(getContext(), "🔄 Spoofing Refreshed", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Toast.makeText(getContext(), "❌ Failed to refresh: System permission missing", Toast.LENGTH_LONG).show();
+                // If reflection fails or permission is missing
+                Toast.makeText(getContext(), "❌ System call failed", Toast.LENGTH_SHORT).show();
             }
         }
     }
