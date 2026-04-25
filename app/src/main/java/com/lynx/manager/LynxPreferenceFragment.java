@@ -37,27 +37,11 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.lynx_preferences, rootKey);
 
-        setupPref("pref_add_pif", p -> {
-            openFilePicker("application/json", "pif");
-            return true;
-        });
+        setupPref("pref_add_pif", p -> { openFilePicker("application/json", "pif"); return true; });
+        setupPref("pref_add_keybox", p -> { openFilePicker("text/xml", "keybox"); return true; });
+        setupPref("pref_refresh_spoof", p -> { refreshSpoof(); return true; });
+        setupPref("pref_reset_spoofing", p -> { resetSpoofing(); return true; });
 
-        setupPref("pref_add_keybox", p -> {
-            openFilePicker("text/xml", "keybox");
-            return true;
-        });
-
-        setupPref("pref_refresh_spoof", p -> {
-            refreshSpoof();
-            return true;
-        });
-
-        setupPref("pref_reset_spoofing", p -> {
-            resetSpoofing();
-            return true;
-        });
-
-        // Update summaries to show current state on open
         updateSummaries();
     }
 
@@ -67,50 +51,36 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
         updateSummaries();
     }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────
-
     private void setupPref(String key, Preference.OnPreferenceClickListener l) {
         Preference p = findPreference(key);
         if (p != null) p.setOnPreferenceClickListener(l);
     }
 
-    /**
-     * Shows current state on each preference summary so user
-     * knows at a glance what is loaded.
-     */
     private void updateSummaries() {
         Context ctx = getContext();
         if (ctx == null) return;
-
         ContentResolver cr = ctx.getContentResolver();
 
-        String pifData    = Settings.Secure.getString(cr, "lynx_pif_data");
-        String keyboxData = Settings.Secure.getString(cr, "lynx_keybox_data");
+        String pif = Settings.Secure.getString(cr, "lynx_pif_data");
+        String keybox = Settings.Secure.getString(cr, "lynx_keybox_data");
 
-        Preference pifPref    = findPreference("pref_add_pif");
-        Preference keyboxPref = findPreference("pref_add_keybox");
+        Preference pifPref = findPreference("pref_add_pif");
+        Preference kbPref = findPreference("pref_add_keybox");
 
         if (pifPref != null) {
-            if (pifData != null && !pifData.isEmpty()) {
-                pifPref.setSummary("✅ PIF loaded — tap to replace");
-            } else {
-                pifPref.setSummary("⚠️ No PIF loaded — using hardware fingerprint");
-            }
+            pifPref.setSummary((pif != null && !pif.trim().isEmpty())
+                ? "✅ PIF active — tap to replace"
+                : "⚠️ No PIF — using hardware fingerprint");
         }
-
-        if (keyboxPref != null) {
-            if (keyboxData != null && !keyboxData.isEmpty()) {
-                keyboxPref.setSummary("✅ Keybox loaded — tap to replace");
-            } else {
-                keyboxPref.setSummary("⚠️ No Keybox loaded — using hardware attestation");
-            }
+        if (kbPref != null) {
+            kbPref.setSummary((keybox != null && !keybox.trim().isEmpty())
+                ? "✅ Keybox active — tap to replace"
+                : "⚠️ No Keybox — using hardware attestation");
         }
     }
 
-    // ─── File Picker ─────────────────────────────────────────────────────────
-
     private void openFilePicker(String mimeType, String type) {
-        this.currentType = type;
+        currentType = type;
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType(mimeType);
@@ -120,127 +90,90 @@ public class LynxPreferenceFragment extends PreferenceFragmentCompat {
     private void handleFileSelection(Uri uri) {
         Context ctx = getContext();
         if (ctx == null) return;
-
-        try {
-            InputStream is = ctx.getContentResolver().openInputStream(uri);
+        try (InputStream is = ctx.getContentResolver().openInputStream(uri)) {
             if (is == null) {
                 Toast.makeText(ctx, "❌ Cannot open file", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             String content = new BufferedReader(new InputStreamReader(is))
                     .lines().collect(Collectors.joining("\n"));
 
-            if (content.isEmpty()) {
+            if (content.trim().isEmpty()) {
                 Toast.makeText(ctx, "❌ File is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Validate JSON for PIF
-            if (currentType.equals("pif") && !content.trim().startsWith("{")) {
-                Toast.makeText(ctx, "❌ Invalid JSON file", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            String key = currentType.equals("pif") ? "lynx_pif_data" : "lynx_keybox_data";
+            boolean ok = Settings.Secure.putString(ctx.getContentResolver(), key, content);
 
-            // Validate XML for Keybox
-            if (currentType.equals("keybox") && !content.trim().startsWith("<")) {
-                Toast.makeText(ctx, "❌ Invalid XML file", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String dbKey = currentType.equals("pif") ? "lynx_pif_data" : "lynx_keybox_data";
-            boolean wrote = Settings.Secure.putString(ctx.getContentResolver(), dbKey, content);
-
-            if (wrote) {
-                Toast.makeText(ctx, "✅ " + currentType.toUpperCase() + " Applied — tap Refresh to activate", Toast.LENGTH_LONG).show();
+            if (ok) {
+                Toast.makeText(ctx, "✅ " + currentType.toUpperCase() + " saved — tap Refresh to activate", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(ctx, "❌ Write failed — is WRITE_SECURE_SETTINGS granted?", Toast.LENGTH_LONG).show();
+                Toast.makeText(ctx, "❌ Write failed — check WRITE_SECURE_SETTINGS", Toast.LENGTH_LONG).show();
             }
-
             updateSummaries();
-
         } catch (Exception e) {
-            Toast.makeText(ctx, "❌ Error reading file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, "❌ Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    // ─── Reset ───────────────────────────────────────────────────────────────
-
-    /**
-     * Reset: DELETE the keys entirely (null) so the module sees
-     * no entry at all — not just an empty string — and falls back
-     * to hardware info cleanly.
-     */
     private void resetSpoofing() {
         Context ctx = getContext();
         if (ctx == null) return;
 
-        ContentResolver cr = ctx.getContentResolver();
+        // null removes the key entirely from Settings.Secure database
+        // When PropImitationHooks reads null, it falls back to resource array (hardware)
+        Settings.Secure.putString(ctx.getContentResolver(), "lynx_pif_data", null);
+        Settings.Secure.putString(ctx.getContentResolver(), "lynx_keybox_data", null);
 
-        // Writing null removes the key from Settings.Secure entirely
-        Settings.Secure.putString(cr, "lynx_pif_data", null);
-        Settings.Secure.putString(cr, "lynx_keybox_data", null);
-
-        Toast.makeText(ctx, "🗑️ Spoofing data cleared — tap Refresh to apply", Toast.LENGTH_LONG).show();
+        Toast.makeText(ctx, "🗑️ Spoofing data deleted", Toast.LENGTH_SHORT).show();
         updateSummaries();
+
+        // Auto-refresh so GMS picks up the change immediately
+        refreshSpoof();
     }
 
-    // ─── Refresh ─────────────────────────────────────────────────────────────
-
     /**
-     * Refresh flow:
-     * 1. Tell GMS phenotype a flag changed
-     * 2. Tell Lynx module to re-read Settings.Secure (custom action)
-     * 3. Kill GMS background processes so they restart and re-read data
-     * 4. Small delay then kill again (GMS sometimes respawns too fast)
+     * How refresh works:
      *
-     * No root needed — priv-app + FORCE_STOP_PACKAGES handles process killing.
+     * 1. Kill GMS background processes
+     * 2. GMS restarts automatically (Android keeps it alive)
+     * 3. On restart, Instrumentation.newApplication() fires
+     * 4. PropImitationHooks.setProps(Context) is called
+     * 5. setPlayIntegrityProps() reads Settings.Secure fresh
+     * 6. sCertifiedProps.clear() runs first (framework patch)
+     * 7. New data (or null = hardware fallback) is loaded
+     *
+     * No broadcasts needed — there is no observer in the engine.
+     * The hook in Instrumentation handles everything on app restart.
      */
     private void refreshSpoof() {
         Context ctx = getContext();
         if (ctx == null) return;
 
-        try {
-            // Step 1: Notify module to re-read data immediately
-            Intent moduleRefresh = new Intent("com.lynx.module.REFRESH");
-            ctx.sendBroadcast(moduleRefresh);
-
-            // Step 2: GMS phenotype signal
-            Intent phenotype = new Intent("com.google.android.gms.phenotype.FLAG_UPDATE");
-            phenotype.setPackage("com.google.android.gms");
-            ctx.sendBroadcast(phenotype);
-
-            // Step 3: Kill GMS processes so they restart and read fresh data
-            killGmsProcesses(ctx);
-
-            // Step 4: Kill again after 1.5s — GMS respawns quickly
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                killGmsProcesses(ctx);
-                Toast.makeText(ctx, "🔄 GMS restarted — data is now active", Toast.LENGTH_SHORT).show();
-                updateSummaries();
-            }, 1500);
-
-            Toast.makeText(ctx, "⏳ Refreshing GMS...", Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) {
-            Toast.makeText(ctx, "⚠️ Refresh partial: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void killGmsProcesses(Context ctx) {
         ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
         if (am == null) return;
 
         String[] targets = {
-            "com.google.android.gms",           // Play Services
-            "com.google.android.gms.unstable",  // DroidGuard / SafetyNet
-            "com.android.vending"               // Play Store
+            "com.google.android.gms",
+            "com.google.android.gms.unstable",
+            "com.android.vending"
         };
 
+        // First kill wave
         for (String pkg : targets) {
-            try {
-                am.killBackgroundProcesses(pkg);
-            } catch (Exception ignored) {}
+            try { am.killBackgroundProcesses(pkg); } catch (Exception ignored) {}
         }
+
+        Toast.makeText(ctx, "⏳ Restarting GMS...", Toast.LENGTH_SHORT).show();
+
+        // Second kill after 2 seconds — GMS respawns very fast
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            for (String pkg : targets) {
+                try { am.killBackgroundProcesses(pkg); } catch (Exception ignored) {}
+            }
+            Toast.makeText(ctx, "🔄 Done — GMS restarted with fresh data", Toast.LENGTH_SHORT).show();
+            updateSummaries();
+        }, 2000);
     }
 }

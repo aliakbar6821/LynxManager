@@ -9,13 +9,13 @@
         <Preference
             android:key="pref_add_pif"
             android:title="Google PIF (JSON)"
-            android:summary="⚠️ No PIF loaded — using hardware fingerprint"
+            android:summary="⚠️ No PIF — using hardware fingerprint"
             app:icon="@android:drawable/ic_menu_edit" />
 
         <Preference
             android:key="pref_add_keybox"
             android:title="Hardware Keybox (XML)"
-            android:summary="⚠️ No Keybox loaded — using hardware attestation"
+            android:summary="⚠️ No Keybox — using hardware attestation"
             app:icon="@android:drawable/ic_lock_lock" />
 
     </PreferenceCategory>
@@ -27,13 +27,13 @@
         <Preference
             android:key="pref_refresh_spoof"
             android:title="Refresh Spoof"
-            android:summary="Restart GMS to activate newly loaded PIF or Keybox"
+            android:summary="Kill &amp; restart GMS to load new data (no reboot needed)"
             app:icon="@android:drawable/ic_menu_rotate" />
 
         <Preference
             android:key="pref_reset_spoofing"
             android:title="Reset All Spoofing"
-            android:summary="Remove PIF and Keybox — reverts to real hardware info"
+            android:summary="Delete PIF &amp; Keybox — revert to real hardware"
             app:icon="@android:drawable/ic_menu_revert" />
 
     </PreferenceCategory>
